@@ -1,0 +1,103 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+    id "com.jfrog.artifactory" version "4.27.0"
+}
+
+
+group = "com.sxtanna.mc.micro"
+version = "1.0.0-SNAPSHOT"
+
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url = uri("https://jitpack.io")
+    }
+    maven {
+        url = uri("https://repo.aikar.co/content/groups/aikar/")
+    }
+    maven {
+        url = uri("https://papermc.io/repo/repository/maven-public/")
+    }
+
+    maven {
+        url = uri("https://maven.enginehub.org/repo/")
+    }
+}
+
+dependencies {
+    compileOnly("org.jetbrains:annotations:23.0.0")
+
+    compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.1.0-SNAPSHOT")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+}
+
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+configurations {
+    testImplementation.extendsFrom(compileOnly)
+}
+
+processResources {
+    filesMatching("*.yml") {
+        expand(["project_version": rootProject.version,
+                "jenkins_version": System.getenv("BUILD_NUMBER")])
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+    options.compilerArgs += ["-parameters"]
+
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.java
+        }
+    }
+}
+
+artifactoryPublish {
+    publications(publishing.publications.mavenJava)
+}
+
+
+artifactory {
+    contextUrl = "https://repo.sxtanna.com/artifactory"
+
+    publish {
+        repository {
+            repoKey = "micro-plugins"
+
+            username = project.hasProperty("sxtannaArtifactoryUser") ? sxtannaArtifactoryUser : System.getenv("sxtannaArtifactoryUser")
+            password = project.hasProperty("sxtannaArtifactoryAuth") ? sxtannaArtifactoryAuth : System.getenv("sxtannaArtifactoryAuth")
+        }
+
+        defaults {
+            publishArtifacts = true
+        }
+    }
+}

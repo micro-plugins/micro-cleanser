@@ -1,0 +1,13 @@
+name: "uCleanser"
+main: "com.sxtanna.mc.micro.MicroCleanserPlugin"
+
+version: "$project_version ($jenkins_version)"
+authors: [ "Sxtanna" ]
+website: "https://www.sxtanna.com"
+
+api-version: "1.18"
+
+prefix: "μ"
+
+depend:
+  - "WorldGuard"
